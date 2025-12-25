@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>محاسبه‌گر خرید دین</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Vazirmatn', sans-serif; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] { -moz-appearance: textfield; }
+  </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
+
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+
+    <!-- Header -->
+    <div class="bg-purple-900 p-6 text-white flex flex-col items-center justify-center gap-4">
+      <img src="https://arominco.com/uploads/logo/d78b372ae4021bbe53cd7ac99ac872df.png"
+           alt="لوگوی شرکت"
+           class="w-28 h-28 object-contain rounded-xl shadow-lg">
+      <h1 class="text-2xl font-bold mb-2">محاسبه‌گر استاندارد خرید دین</h1>
+      <p class="text-white-200 text-sm opacity-90">سیستم یکپارچه محاسبات مالی شرکت آرومین</p>
+    </div>
+
+    <!-- Form Section -->
+    <div class="p-6 space-y-6">
+
+      <!-- Principal Input -->
+      <div>
+        <label for="principal" class="block text-sm font-medium text-gray-700 mb-2">
+          مبلغ اصل مشتری (تومان)
+          <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input type="text" inputmode="numeric" id="principal"
+                 class="block w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg text-left transition-all"
+                 placeholder="مبلغ را وارد کنید" oninput="formatCurrencyInput(this)">
+        </div>
+        <p class="text-xs text-gray-500 mt-1 text-left" id="principal-words"></p>
+      </div>
+
+      <!-- Months Input -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="months" class="block text-sm font-medium text-gray-700 mb-2">
+            تعداد ماه
+            <span class="text-red-500">*</span>
+          </label>
+          <input type="number" id="months"
+                 class="block w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg text-center transition-all"
+                 placeholder="0" min="0" step="0.5">
+        </div>
+
+        <!-- Auto-calculated Days -->
+        <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 flex flex-col justify-center items-center">
+          <span class="text-xs text-gray-500 mb-1">تعداد روز (محاسبه خودکار)</span>
+          <span id="days-display" class="text-xl font-bold text-gray-700">0</span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="border-t border-gray-200 my-4"></div>
+
+      <!-- Results -->
+      <div class="bg-purple-50 rounded-xl p-5 border border-blue-100 space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-gray-600">سود محاسبه شده (۴۰٪ سالانه):</span>
+          <span id="interest-display" class="font-medium text-gray-800">0</span>
+        </div>
+
+        <!-- 10% VAT only on interest -->
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-gray-600">سود محاسبه شده + ۱۰٪ ارزش افزوده فقط روی سود :</span>
+          <span id="interest-vat-display" class="font-medium text-gray-800">0</span>
+        </div>
+
+        <div class="flex flex-col items-center pt-2">
+          <span class="text-sm font-bold text-blue-900 mb-1">مبلغ نهایی چک (رُند شده به ۱۰۰۰ تومان بالا)</span>
+          <div class="text-3xl font-black text-blue-700 tracking-tight" id="final-amount">0</div>
+          <span class="text-xs text-blue-600 mt-1" id="final-amount-words"></span>
+
+          <!-- ✅ NEW: Check count + auto per-check amounts -->
+          <div class="w-full mt-4 bg-white/70 rounded-xl border border-blue-100 p-4 space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <label for="checks-count" class="text-sm font-medium text-gray-700">
+                تعداد چک‌ها:
+              </label>
+
+              <select id="checks-count"
+                      class="p-3 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="1">۱</option>
+                <option value="2">۲</option>
+                <option value="3">۳</option>
+                <option value="4">۴</option>
+                <option value="5">۵</option>
+                <option value="6">۶</option>
+                <option value="7">۷</option>
+                <option value="8">۸</option>
+                <option value="9">۹</option>
+                <option value="10">۱۰</option>
+                <option value="11">۱۱</option>
+                <option value="12">۱۲</option>
+              </select>
+            </div>
+
+            <div class="text-xs text-gray-600 leading-relaxed">
+              مبلغ هر چک به‌صورت خودکار از روی مبلغ نهایی تنظیم می‌شود (به مضرب ۱۰۰۰ تومان).
+            </div>
+
+            <div id="checks-breakdown" class="space-y-2"></div>
+          </div>
+          <!-- /NEW -->
+        </div>
+      </div>
+
+      <!-- Warning/Info -->
+      <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200 flex items-start gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <p class="text-xs text-yellow-800 leading-relaxed">
+          این مبلغ نهایی است و نباید به‌صورت دستی دست‌کاری شود. لطفاً قبل از اعلام قیمت به مشتری، خروجی را چک کنید.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-gray-50 p-4 text-center border-t border-gray-200">
+      <button onclick="resetForm()" class="text-sm text-gray-500 hover:text-red-500 transition-colors cursor-pointer">
+        پاک کردن فرم
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Constants
+    const ANNUAL_RATE = 0.40;
+    const VAT_RATE_ON_INTEREST = 0.10;
+
+    // Elements
+    const principalInput = document.getElementById('principal');
+    const principalWords = document.getElementById('principal-words');
+    const monthsInput = document.getElementById('months');
+    const daysDisplay = document.getElementById('days-display');
+    const interestDisplay = document.getElementById('interest-display');
+    const interestVatDisplay = document.getElementById('interest-vat-display');
+    const finalAmountDisplay = document.getElementById('final-amount');
+    const finalAmountWords = document.getElementById('final-amount-words');
+
+    const checksCountSelect = document.getElementById('checks-count');
+    const checksBreakdown = document.getElementById('checks-breakdown');
+
+    // Event Listeners
+    principalInput.addEventListener('input', handlePrincipalInput);
+    monthsInput.addEventListener('input', calculate);
+    checksCountSelect.addEventListener('change', calculate);
+
+    function handlePrincipalInput() {
+      formatCurrencyInput(this);
+      const rawVal = this.dataset.rawValue;
+      if (rawVal && rawVal.length > 0) {
+        principalWords.textContent = numberToPersianWords(rawVal) + ' تومان';
+      } else {
+        principalWords.textContent = '';
+      }
+    }
+
+    function formatCurrencyInput(input) {
+      // Remove non-numeric chars
+      let value = input.value.replace(/[^0-9]/g, '');
+
+      // Store raw value for calculation
+      input.dataset.rawValue = value;
+
+      // Format display with commas
+      if (value) {
+        input.value = parseInt(value, 10).toLocaleString('en-US');
+      } else {
+        input.value = '';
+      }
+
+      calculate();
+    }
+
+    function renderChecks(totalAmount) {
+      const n = parseInt(checksCountSelect.value, 10) || 1;
+
+      // if total is 0 -> clear
+      if (!totalAmount || totalAmount <= 0) {
+        checksBreakdown.innerHTML = '';
+        return;
+      }
+
+      // totalAmount is already multiple of 1000
+      // We make first (n-1) checks equal, rounded DOWN to 1000, and last check = remainder (still multiple of 1000)
+      const avg = Math.floor(totalAmount / n);
+      const base = Math.floor(avg / 1000) * 1000; // round down to 1000
+
+      // if base becomes 0 for small totals with large n, fallback to 0 for early checks and remainder on last
+      const amounts = [];
+      for (let i = 1; i <= n; i++) {
+        if (i < n) amounts.push(base);
+        else amounts.push(totalAmount - base * (n - 1));
+      }
+
+      // Build UI
+      let html = '';
+      amounts.forEach((amt, idx) => {
+        const checkNo = idx + 1;
+        html += `
+          <div class="flex items-start justify-between gap-3 bg-white rounded-lg border border-gray-200 p-3">
+            <div class="text-sm font-medium text-gray-700">چک ${checkNo}</div>
+            <div class="text-left">
+              <div class="text-sm font-bold text-gray-800">${amt.toLocaleString('en-US')}</div>
+              <div class="text-[11px] text-gray-500 mt-0.5">${numberToPersianWords(amt)} تومان</div>
+            </div>
+          </div>
+        `;
+      });
+
+      checksBreakdown.innerHTML = html;
+    }
+
+    function calculate() {
+      const principalStr = principalInput.dataset.rawValue || '0';
+      const principal = parseFloat(principalStr);
+      const months = parseFloat(monthsInput.value) || 0;
+
+      // 1. Calculate Days
+      const days = Math.round(months * 30);
+      daysDisplay.textContent = days.toLocaleString('fa-IR');
+
+      if (principal > 0 && months > 0) {
+        // 2. Interest (365 days)
+        const interest = (principal * ANNUAL_RATE * days) / 365;
+
+        // VAT only on interest: interest + 10%
+        const interestWithVat = interest * (1 + VAT_RATE_ON_INTEREST);
+
+        // 3. Final Amount (currently: principal + interest)
+        // اگر خواستی مبلغ نهایی با ارزش افزوده هم حساب بشه، این خط رو به principal + interestWithVat تغییر بده.
+        const total = principal + interest;
+
+        // 4. Round Up to nearest 1000
+        const roundedTotal = Math.ceil(total / 1000) * 1000;
+
+        // Update Display
+        interestDisplay.textContent = Math.round(interest).toLocaleString('en-US');
+        interestVatDisplay.textContent = Math.round(interestWithVat).toLocaleString('en-US');
+        finalAmountDisplay.textContent = roundedTotal.toLocaleString('en-US');
+        finalAmountWords.textContent = numberToPersianWords(roundedTotal) + ' تومان';
+
+        // ✅ Checks breakdown
+        renderChecks(roundedTotal);
+
+      } else {
+        interestDisplay.textContent = '0';
+        interestVatDisplay.textContent = '0';
+        finalAmountDisplay.textContent = '0';
+        finalAmountWords.textContent = '';
+        checksBreakdown.innerHTML = '';
+      }
+    }
+
+    function resetForm() {
+      principalInput.value = '';
+      principalInput.dataset.rawValue = '0';
+      principalWords.textContent = '';
+      monthsInput.value = '';
+      daysDisplay.textContent = '0';
+      interestDisplay.textContent = '0';
+      interestVatDisplay.textContent = '0';
+      finalAmountDisplay.textContent = '0';
+      finalAmountWords.textContent = '';
+      checksCountSelect.value = '1';
+      checksBreakdown.innerHTML = '';
+    }
+
+    // Simplified Number to Persian Words Function
+    function numberToPersianWords(number) {
+      const delimiter = ' و ';
+      const zero = 'صفر';
+      const negative = 'منفی ';
+      const letters = [
+        ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'],
+        ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده', 'بیست'],
+        ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'],
+        ['', 'صد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'],
+        ['', ' هزار', ' میلیون', ' میلیارد', ' تریلیون']
+      ];
+
+      // Accept string numbers too
+      number = parseInt(number, 10);
+
+      if (number === 0) return zero;
+      if (number < 0) return negative + numberToPersianWords(Math.abs(number));
+
+      let words = [];
+      let splitNumber = number.toString().split('');
+      let len = splitNumber.length;
+      let chunkCount = Math.ceil(len / 3);
+
+      for (let i = 0; i < chunkCount; i++) {
+        let chunkIndex = (len - (i + 1) * 3);
+        let chunkLen = 3;
+        if (chunkIndex < 0) {
+          chunkLen += chunkIndex;
+          chunkIndex = 0;
+        }
+
+        let chunk = parseInt(splitNumber.slice(chunkIndex, chunkIndex + chunkLen).join(''), 10);
+
+        if (chunk > 0) {
+          let chunkWords = [];
+
+          if (chunk >= 100) {
+            chunkWords.push(letters[3][Math.floor(chunk / 100)]);
+            chunk %= 100;
+          }
+
+          if (chunk >= 10 && chunk <= 20) {
+            chunkWords.push(letters[1][chunk - 10]);
+          } else {
+            if (chunk >= 20) {
+              chunkWords.push(letters[2][Math.floor(chunk / 10)]);
+              chunk %= 10;
+            }
+            if (chunk > 0) {
+              chunkWords.push(letters[0][chunk]);
+            }
+          }
+
+          let chunkStr = chunkWords.join(delimiter);
+          if (i > 0) {
+            chunkStr += letters[4][i];
+          }
+          words.unshift(chunkStr);
+        }
+      }
+
+      return words.join(delimiter);
+    }
+  </script>
+</body>
+</html>
