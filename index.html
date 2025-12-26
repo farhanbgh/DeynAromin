@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -246,8 +247,8 @@
         const interestWithVat = interest * (1 + VAT_RATE_ON_INTEREST);
 
         // 3. Final Amount (currently: principal + interest)
-        // اگر خواستی مبلغ نهایی با ارزش افزوده هم حساب بشه، این خط رو به principal + interestWithVat تغییر بده.
-        const total = principal + interest;
+       
+        const total = principal + interestWithVat;
 
         // 4. Round Up to nearest 1000
         const roundedTotal = Math.ceil(total / 1000) * 1000;
